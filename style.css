@@ -1,0 +1,155 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #eee;
+}
+
+/* Html - Css - Js textarea larımızın bulunduğu kısım */
+#editor-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #1e1e1e;
+  height: 200px;
+}
+
+.editor {
+  flex: 1 1 30%;
+  margin: 0 6px;
+  display: flex;
+  flex-direction: column;
+  background-color: #222;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.editor h3 {
+  margin: 0;
+  padding: 6px;
+  background-color: #333;
+  color: #ccc;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid #444;
+}
+
+textarea {
+  width: 100%;
+  height: 140px;
+  resize: none;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 14px;
+  padding: 8px;
+  border: none;
+  background-color: #111;
+  color: #eee;
+  box-sizing: border-box;
+}
+
+/* Önizleme Kısmı*/
+#preview-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(100vh - 200px);
+  background-color: #fff;
+  border-top: 2px solid #444;
+}
+
+#preview {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Buton */
+button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background-color: gray;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  font-size: 20px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+  z-index: 1001;
+}
+
+/* Footer stili */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #333;
+  color: #eee;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 1000; 
+}
+
+#load-btn {
+  margin-left: 0; 
+}
+
+#save-btn {
+  margin-right: 0;
+}
+
+button:hover {
+  transform: scale(1.2);
+}
+
+/* Modal stil */
+#load-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+#load-modal.hidden {
+  display: none;
+}
+#modal-content {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  color: #eee;
+}
+#modal-content h3 {
+  margin-top: 0;
+}
+#modal-content label {
+  display: block;
+  margin: 10px 0;
+  font-size: 14px;
+}
+#modal-content input[type="file"] {
+  margin-top: 4px;
+  width: 100%;
+}
+#modal-content button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #333;
+  color: #eee;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
