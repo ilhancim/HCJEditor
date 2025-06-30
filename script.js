@@ -6,13 +6,27 @@ const saveBtn = document.getElementById('save-btn');
 
 // Canlı önizleme
 function updatePreview() {
-  const html = htmlInput.value;
-  const css = `<style>${cssInput.value}</style>`;
-  const js = `<script>${jsInput.value}<\/script>`;
   const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
   doc.open();
-  doc.write(html + css + js);
+  doc.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>${cssInput.value}</style>
+      </head>
+      <body>
+        ${htmlInput.value}
+        <div id="script-placeholder"></div>
+      </body>
+    </html>
+  `);
   doc.close();
+
+  // Kod yazıldıktan sonra gerçek script'i ekle
+  const script = doc.createElement('script');
+  script.type = 'text/javascript';
+  script.textContent = jsInput.value;
+  doc.body.appendChild(script);
 }
 
 // localStorage
@@ -94,7 +108,6 @@ ${jsContent}
   URL.revokeObjectURL(url);
 });
 
-
 // ENTER & TAB tuşlarına basınca olacak event
 function handleKeyDown(event) {
   const textarea = event.target;
@@ -125,31 +138,53 @@ function handleEnterKey(textarea) {
   const indentation = indentationMatch ? indentationMatch[0] : '';
   let newIndentation = indentation;
 
-  const isInlineClosed = currentLine.trim().match(/^<([a-zA-Z][\w-]*)[^>]*>.*<\/\1>$/);
-  if (isInlineClosed) {
-    const tagName = isInlineClosed[1];
+  const trimmed = currentLine.trim();
+
+  // Self-closing tag listesi
+  const selfClosingTags = ['br', 'img', 'input', 'link', 'meta', 'hr'];
+
+  // Eğer satır self-closing tag içeriyorsa, sadece yeni satır aç (girinti yok)
+  // Örneğin: <input type="text" />
+  for (const tag of selfClosingTags) {
+    const regexSelfClosing = new RegExp(`^<${tag}[^>]*\\/?>$`, 'i');
+    if (regexSelfClosing.test(trimmed)) {
+      insertPlainNewline(textarea, indentation);
+      return;
+    }
+  }
+
+  // Eğer satır tamamen boş çift tag ise (ör: <div></div>)
+  const emptyInlinePairMatch = trimmed.match(/^<([a-zA-Z][\w-]*)[^>]*>\s*<\/\1>$/);
+  if (emptyInlinePairMatch) {
+    const tagName = emptyInlinePairMatch[1];
     const before = value.substring(0, start);
     const after = value.substring(end);
 
-    const insideIndent = indentation + '  ';
-    const insertText = '\n' + insideIndent + '\n' + indentation + `</${tagName}>`;
+    const indentInside = indentation + '  ';
+    const insertText = '\n' + indentInside + '\n' + indentation + `</${tagName}>`;
 
     textarea.value = before + insertText + after;
-    textarea.selectionStart = textarea.selectionEnd = before.length + 1 + insideIndent.length;
+    textarea.selectionStart = textarea.selectionEnd = before.length + 1 + indentInside.length;
+
     updatePreview();
     return;
   }
 
+  // Eğer satırda sadece kapanış etiketi varsa
+  if (/^<\/[a-zA-Z][\w-]*>$/.test(trimmed)) {
+    insertPlainNewline(textarea, indentation);
+    return;
+  }
+
+  // Eğer satırda sadece açılış etiketi varsa (HTML için)
   if (textarea.id === 'html-code') {
-    const openTagMatch = currentLine.trim().match(/^<([a-zA-Z][\w-]*)[^>]*>$/);
+    const openTagMatch = trimmed.match(/^<([a-zA-Z][\w-]*)[^>]*>$/);
     if (openTagMatch) {
       const tagName = openTagMatch[1];
       const before = value.substring(0, start);
       const after = value.substring(end);
 
       const indentInside = indentation + '  ';
-      const closingTagLine = indentation + `</${tagName}>`;
-
       const insertText = '\n' + indentInside + '\n';
 
       textarea.value = before + insertText + after;
@@ -160,7 +195,8 @@ function handleEnterKey(textarea) {
     }
   }
 
-  if (textarea.id === 'css-code' && currentLine.trim().endsWith('{')) {
+  // CSS için: { varsa içeri gir
+  if (textarea.id === 'css-code' && trimmed.endsWith('{')) {
     newIndentation += '  ';
     const before = value.substring(0, start);
     const after = value.substring(end);
@@ -175,9 +211,9 @@ function handleEnterKey(textarea) {
     return;
   }
 
+  // Diğer her şeyde → sadece düz yeni satır
   insertPlainNewline(textarea, indentation);
 }
-
 
 //Yeni satır yardımcısı
 function insertPlainNewline(textarea, indentation) {
@@ -217,7 +253,7 @@ function handleTabShortcut(event) {
     const specialAttributes = {
       'a': ' href="" target="_blank"',
       'img': ' src="" alt=""',
-      'input': ' type=""',
+      'input': ' type="text" id="" name=""',
       'form': ' action="" method=""',
       'link': ' rel="" href=""',
       'script': ' src=""',
@@ -225,6 +261,7 @@ function handleTabShortcut(event) {
       'button': ' type=""',
       'textarea': '',
       'select': '',
+      'label': ' for=""' ,
     };
 
     let tag = 'div';
@@ -329,6 +366,21 @@ function parseAndLoadFullHtml(content) {
   updatePreview();
 }
 
+function parseAndLoadHtml(content) {
+  // Kalan HTML
+  const html = content
+    .replace(/<!DOCTYPE[^>]*>/i, '')
+    .replace(/<html[^>]*>/i, '')
+    .replace(/<\/html>/i, '')
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/i, '')
+    .replace(/<body[^>]*>/i, '')
+    .replace(/<\/body>/i, '')
+    .trim();
+
+  htmlInput.value = html;
+  updatePreview();
+}
+
 // Full HTML dosyasını yükle
 fullHtmlFile.addEventListener('change', () => {
   readFileInput(fullHtmlFile, (content) => {
@@ -340,8 +392,7 @@ fullHtmlFile.addEventListener('change', () => {
 // Ayrı ayrı dosyalar
 htmlFile.addEventListener('change', () => {
   readFileInput(htmlFile, (content) => {
-    htmlInput.value = content.trim();
-    updatePreview();
+    parseAndLoadFullHtml(content);
     loadModal.classList.add('hidden');
   });
 });
