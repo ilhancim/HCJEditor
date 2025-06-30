@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canlı Kod Editör</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div id="editor-container">
+    <div class="editor">
+      <h3>HTML</h3>
+      <textarea id="html-code" placeholder="HTML Kodu"></textarea>
+    </div>
+    <div class="editor">
+      <h3>CSS</h3>
+      <textarea id="css-code" placeholder="CSS Kodu"></textarea>
+    </div>
+    <div class="editor">
+      <h3>JavaScript</h3>
+      <textarea id="js-code" placeholder="JS Kodu"></textarea>
+    </div>
+  </div>
+
+  <div id="preview-container">
+    <iframe id="preview"></iframe>
+  </div>
+
+<!-- Footer -->
+<footer>
+    <button id="load-btn" title="Dosya Yükle">📂</button>
+    &copy; İlhan Kılıç
+    <button id="save-btn" title="Dosyayı indir">💾</button>
+</footer>
+
+
+  <!-- MODAL PANEL -->
+  <div id="load-modal" class="hidden">
+    <div id="modal-content">
+      <h3>Dosya Yükle</h3>
+      <label>Tek HTML Dosyası:
+        <input type="file" id="full-html-file" accept=".html,.htm" />
+      </label>
+      <hr>
+      <label>HTML Dosyası:
+        <input type="file" id="html-file" accept=".html,.htm,.txt" />
+      </label>
+      <label>CSS Dosyası:
+        <input type="file" id="css-file" accept=".css,.txt" />
+      </label>
+      <label>JS Dosyası:
+        <input type="file" id="js-file" accept=".js,.txt" />
+      </label>
+      <button id="close-modal">Kapat</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
